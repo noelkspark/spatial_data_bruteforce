@@ -52,7 +52,7 @@ int main() {
 			printf("%d: (%lf, %lf)\n", num, res->x, res->y);
 			res = res->next;
 			num++;
-		}
+		}  
 		fprintf(stdout, "got %d result(s)\n", num);
 #endif
 	}
