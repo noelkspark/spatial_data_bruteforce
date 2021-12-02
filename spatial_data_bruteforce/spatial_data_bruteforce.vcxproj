@@ -140,14 +140,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bruteforce.cpp" />
+    <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="util_functions.cpp" />
+    <ClCompile Include="r_tree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bruteforce.h" />
     <ClInclude Include="config.h" />
-    <ClInclude Include="context.h" />
-    <ClInclude Include="util_functions.h" />
+    <ClInclude Include="kd_tree.h" />
+    <ClInclude Include="r_tree.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

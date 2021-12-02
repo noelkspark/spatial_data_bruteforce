@@ -4,16 +4,17 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include "config.h"
-#include "context.h"
-#include "util_functions.h"
 #include "bruteforce.h"
+#include "kd_tree.h"
+#include "r_tree.h"
 
 int main() {
-	point* head = NULL;
-
-	read_dataset(&head, INPUT_FILE_NAME);
 	
 	if (MODE == BRUTE_FORCE) {
+		point* head = NULL;
+
+		read_dataset(&head, INPUT_FILE_NAME);
+
 #if QUERY == DISTANCE
 		/*distance query example*/
 		point p;

@@ -21,7 +21,10 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="util_functions.cpp">
+    <ClCompile Include="kd_tree.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="r_tree.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,13 +32,13 @@
     <ClInclude Include="bruteforce.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="context.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="config.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="util_functions.h">
+    <ClInclude Include="kd_tree.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="r_tree.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
