@@ -5,6 +5,7 @@
 //
 //  Created by Bigdata LAB on 2019/11/05.
 //
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,5 +100,47 @@ void kNNquery(struct kd_node_t* p, int K)
 {
     //kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
 
+}
+
+int read_dataset_kd(struct kd_node_t** t, const char* file_name) {
+    FILE* fp = fopen(file_name, "r");
+    if (!fp) {
+        fprintf(stdout, "FILE OPEN ERROR");
+        return 0;
+    }
+    int line_num = 0;
+    char tmp_buf[20], tmp_x[10], tmp_y[10], dummy[5];
+    double dx, dy;
+
+    while (!feof(fp)) {
+        fgets(tmp_buf, sizeof(tmp_buf), fp);
+        line_num++;
+    }
+
+    *t = (kd_node_t*)malloc(sizeof(kd_node_t) * line_num);
+
+    fseek(fp, 0, SEEK_SET);
+    for (int i = 0; i < line_num; i++) {
+        fgets(tmp_buf, sizeof(tmp_buf), fp);
+        sscanf(tmp_buf, "%[^',']%[^' ']%s", tmp_x, dummy, tmp_y);
+        //printf("%s | %s\n", tmp_x, tmp_y);
+        dx = atof(tmp_x);
+        dy = atof(tmp_y);
+        
+        (*t)[i].x[0] = dx; (*t)[i].x[1] = dy;
+    }
+
+    /*
+    point* tmp = *phead;
+    while ((*phead) != NULL) {
+        printf("head is %lf %lf\n", (*phead)->x, (*phead)->y);
+        *phead = (*phead)->next;
+    }
+    *phead = tmp;
+    */
+
+    fclose(fp);
+    
+    return line_num;
 }
 

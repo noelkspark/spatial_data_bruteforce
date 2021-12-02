@@ -143,6 +143,7 @@
     <ClCompile Include="kd_tree.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="r_tree.cpp" />
+    <ClCompile Include="r_tree_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bruteforce.h" />

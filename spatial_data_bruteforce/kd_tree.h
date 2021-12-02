@@ -31,3 +31,5 @@ struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim);
 void rangeQuery(struct kd_node_t* p, double radius);
 
 void kNNquery(struct kd_node_t* p, int K);
+
+int read_dataset_kd(struct kd_node_t**, const char* filename);

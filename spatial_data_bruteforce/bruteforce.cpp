@@ -195,7 +195,7 @@ int pop_point(point** head, point* tar) {
 	return 0;
 }
 
-void read_dataset(point** phead, const char* file_name) {
+void read_dataset_bf(point** phead, const char* file_name) {
 
 	FILE* fp = fopen(file_name, "r");
 	if (!fp) {

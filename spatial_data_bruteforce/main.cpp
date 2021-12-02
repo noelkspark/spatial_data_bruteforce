@@ -13,7 +13,7 @@ int main() {
 	if (MODE == BRUTE_FORCE) {
 		point* head = NULL;
 
-		read_dataset(&head, INPUT_FILE_NAME);
+		read_dataset_bf(&head, INPUT_FILE_NAME);
 
 #if QUERY == DISTANCE
 		/*distance query example*/
@@ -58,6 +58,16 @@ int main() {
 #endif
 	}
 	else if (MODE == KD_TREE) {
+		kd_node_t* kd_t = NULL;
+		int len = read_dataset_kd(&kd_t, INPUT_FILE_NAME);
+		if (!len) {
+			fprintf(stdout, "file open error | nothing in the file\n\n");
+		}
+		/*
+		for (int i = 0; i < len; i++) {
+			printf("%lf %lf\n", kd_t[i].x[0], kd_t[i].x[1]);
+		}
+		*/
 #if QUERY == DISTANCE
 
 #endif
