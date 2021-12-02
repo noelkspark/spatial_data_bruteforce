@@ -13,7 +13,6 @@ int main() {
 
 	read_dataset(&head, INPUT_FILE_NAME);
 	
-	if (MODE == BRUTE_FORCE) {
 #if QUERY == DISTANCE
 		/*distance query example*/
 		point p;
@@ -55,32 +54,7 @@ int main() {
 		}  
 		fprintf(stdout, "got %d result(s)\n", num);
 #endif
-	}
-	else if (MODE == KD_TREE) {
-#if QUERY == DISTANCE
-
-#endif
-#if QUERY == RANGE
-
-#endif
-#if QUERY == KNN
-
-#endif
-	}
-	else if (MODE == R_TREE) {
-#if QUERY == DISTANCE
-
-#endif
-#if QUERY == RANGE
-
-#endif
-#if QUERY == KNN
-
-#endif
-	}
-	else {
-		fprintf(stdout, "WRONG MODE\n");
-	}
+	
 
 
 	return 0;

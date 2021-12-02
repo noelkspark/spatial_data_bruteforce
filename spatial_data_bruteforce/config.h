@@ -1,9 +1,5 @@
 #define data_size 10000000
 
-#define BRUTE_FORCE 0
-#define KD_TREE 1
-#define R_TREE 2
-
 #define DISTANCE 0
 #define RANGE 1
 #define KNN 2
