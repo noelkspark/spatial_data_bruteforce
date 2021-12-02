@@ -6,15 +6,7 @@
 //  Created by Bigdata LAB on 2019/11/05.
 //
 
-#define MAX_DIM 2
-#define COMPARE(a, b) ((a > b) ? a : b)
-
-// kdtree의 node 자료구조 정의.
-struct kd_node_t
-{
-    double x[MAX_DIM];
-    struct kd_node_t* left, * right;
-};
+#include "context.h"
 
 // 거리함수 정의.
 inline double dist(struct kd_node_t* a, struct kd_node_t* b, int dim);
@@ -28,10 +20,17 @@ struct kd_node_t* find_median(struct kd_node_t* start, struct kd_node_t* end, in
 // recursion으로 kdtree를 build하는 함수.
 struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim);
 
-void rangeQuery(struct kd_node_t* p, double radius);
+void kdstack_push(struct candidate_node** head, struct candidate_node* n_p);
+struct kd_node_t* kdstack_pop(struct candidate_node** head);
+struct candidate_node* kd_create_node(struct kd_node_t kd_node, Rect r);
 
-void kNNquery(struct kd_node_t* p, int K);
+int check_map_overlap(point center, double radius, Rect map1, Rect map2);
+
+point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* p, double radius, int mode);
+
+void kNNquery_kd(struct kd_node_t* p, int K);
 
 int read_dataset_kd(struct kd_node_t**, const char* filename);
 
 void print_preorder_kd(struct kd_node_t*);
+
