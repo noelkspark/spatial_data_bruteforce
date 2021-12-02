@@ -144,3 +144,10 @@ int read_dataset_kd(struct kd_node_t** t, const char* file_name) {
     return line_num;
 }
 
+void print_preorder_kd(struct kd_node_t* t) {
+    if (t != NULL) {
+        printf("%lf %lf\n", t->x[0], t->x[1]);
+        print_preorder_kd(t->left);
+        print_preorder_kd(t->right);
+    }
+}

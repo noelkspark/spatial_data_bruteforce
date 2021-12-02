@@ -33,3 +33,5 @@ void rangeQuery(struct kd_node_t* p, double radius);
 void kNNquery(struct kd_node_t* p, int K);
 
 int read_dataset_kd(struct kd_node_t**, const char* filename);
+
+void print_preorder_kd(struct kd_node_t*);

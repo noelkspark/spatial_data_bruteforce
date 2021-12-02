@@ -6,7 +6,7 @@
 #include "config.h"
 #include "bruteforce.h"
 #include "kd_tree.h"
-#include "r_tree.h"
+//#include "r_tree.h"
 
 int main() {
 	
@@ -58,16 +58,22 @@ int main() {
 #endif
 	}
 	else if (MODE == KD_TREE) {
+		kd_node_t* kd_l = NULL;
 		kd_node_t* kd_t = NULL;
-		int len = read_dataset_kd(&kd_t, INPUT_FILE_NAME);
+
+		int len = read_dataset_kd(&kd_l, INPUT_FILE_NAME);
 		if (!len) {
 			fprintf(stdout, "file open error | nothing in the file\n\n");
 		}
+
+		kd_t = make_kdtree(kd_l, len, 0, 2);
 		/*
 		for (int i = 0; i < len; i++) {
 			printf("%lf %lf\n", kd_t[i].x[0], kd_t[i].x[1]);
 		}
 		*/
+		print_preorder_kd(kd_t);
+	
 #if QUERY == DISTANCE
 
 #endif
