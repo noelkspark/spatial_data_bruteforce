@@ -28,4 +28,5 @@ struct candidate_node{
 	Rect rec;
 	struct candidate_node* next;
 	struct candidate_node* pre;
+	struct kd_node_t* ptr;
 };

@@ -93,14 +93,14 @@ struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim)
     return n;
 }
 
-struct candidate_node* kd_create_node(kd_node_t node, Rect r) {
+struct candidate_node* kd_create_node(kd_node_t node, Rect r, struct kd_node_t* ptr) {
     struct candidate_node* new_node = (struct candidate_node*)malloc(sizeof(struct candidate_node));
 
     new_node->current_node = node;
     new_node->rec = r;
     new_node->pre = NULL;
     new_node->next = NULL;
-    
+    new_node->ptr = ptr;
  
     return new_node;
 }
@@ -179,13 +179,14 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
     map.min_x = map.min_y = 0.0;
 
     res = NULL;
-    ptr[0] = root;  ptr[1] = NULL;
     
-    new_node = kd_create_node(*root, map);   //coordinate date of tmp is used only
+    new_node = kd_create_node(*root, map, root);   //coordinate date of tmp is used only
     kdstack_push(&kd_st, new_node); //root pushed
     
     while (popped = kdstack_pop(&kd_st)) {
+
         map = popped->rec;  //current map
+        root = popped->ptr; //node where we should start from
 
         if (dist(&(popped->current_node), node, 2) < radius) {   //if candidate is in the query range
             tp = create_point(popped->current_node.x[0], popped->current_node.x[1]);
@@ -216,23 +217,21 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
         }
         else if (overlap_flag == 0) {
             printf("check only map0\n");
-            new_node = kd_create_node((*root), map0);
+            new_node = kd_create_node((*root), map0, root->left);
             kdstack_push(&kd_st, new_node);
-            ptr[0] = root->left;
-            ptr[1] = NULL;
         }
         else if (overlap_flag == 1) {
             printf("check only map1\n");
-            new_node = kd_create_node((*root), map1);
+            new_node = kd_create_node((*root), map1, root->right);
             kdstack_push(&kd_st, new_node);
             ptr[0] = NULL;
             ptr[1] = root->right;
         }
         else if (overlap_flag == 2) {
             printf("check both rectangles\n");
-            new_node = kd_create_node((*root), map0);
+            new_node = kd_create_node((*root), map0, root->left);
             kdstack_push(&kd_st, new_node);
-            new_node = kd_create_node((*root), map1);
+            new_node = kd_create_node((*root), map1, root->right);
             kdstack_push(&kd_st, new_node);
             ptr[0] = root->left;
             ptr[1] = root->right;
