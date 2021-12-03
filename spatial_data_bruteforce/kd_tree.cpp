@@ -100,6 +100,7 @@ struct candidate_node* kd_create_node(kd_node_t node, Rect r) {
     new_node->rec = r;
     new_node->pre = NULL;
     new_node->next = NULL;
+    
  
     return new_node;
 }
@@ -115,21 +116,28 @@ void kdstack_push(struct candidate_node** kdt, struct candidate_node* n_p) {
     tmp->pre = n_p;
 }
 
-struct kd_node_t* kdstack_pop(struct candidate_node** kdt) {
-
-    if (*kdt == NULL) {
-        fprintf(stdout, "already empty\n");
+struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
+    if ((*kdt) == NULL) {
+        fprintf(stdout, "nothing to pop, EMPTY\n");
+        return NULL;
     }
 
     struct candidate_node* point_to_be_popped = *kdt;
-    struct kd_node_t* res = (struct kd_node_t*)malloc(sizeof(point));
+    struct candidate_node* res = (struct candidate_node*)malloc(sizeof(struct candidate_node));
+    struct candidate_node tmp;
 
-    res->x[0] = point_to_be_popped->current_node.x[0];
-    res->x[1] = point_to_be_popped->current_node.x[1];
-    (*kdt) = (*kdt)->next;
-    (*kdt)->pre = NULL;
+    tmp = **kdt;
+    *res = tmp;
 
+    if ((*kdt)->next != NULL) {
+        (*kdt) = (*kdt)->next;
+        (*kdt)->pre = NULL;
+    }
+    else {
+        (*kdt) = NULL;
+    }
     free(point_to_be_popped);
+
     return res;
 }
 
@@ -155,11 +163,13 @@ int check_map_overlap(point center, double radius, Rect map0, Rect map1) {
 
 //range query의 질의 조건인 질의 포인트와 질의 반경
 point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radius, int mode){
-    struct candidate_node* kd_st;
+    struct candidate_node* kd_st = NULL;
     Rect map;
-    struct kd_node_t tmp;
+    Rect map0, map1;
+    point center;
     struct candidate_node* new_node;
-    struct kd_node_t* popped;
+    struct candidate_node* popped;
+    struct kd_node_t* ptr[2];
     int overlap_flag;
 
     point* res = (point*)malloc(sizeof(point));
@@ -168,55 +178,73 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
     map.max_x = map.max_y = DBL_MAX;    //init map
     map.min_x = map.min_y = 0.0;
 
-    tmp.x[0] = root->x[0]; tmp.x[1] = root->x[1];
-
-    new_node = kd_create_node(tmp, map);   //coordinate date of tmp is used only
+    res = NULL;
+    ptr[0] = root;  ptr[1] = NULL;
+    
+    new_node = kd_create_node(*root, map);   //coordinate date of tmp is used only
     kdstack_push(&kd_st, new_node); //root pushed
-
+    
     while (popped = kdstack_pop(&kd_st)) {
-        if (dist(popped, node, 2) < radius) {   //if candidate is in the query range
-            tp = create_point(popped->x[0], popped->x[1]);
+        map = popped->rec;  //current map
+
+        if (dist(&(popped->current_node), node, 2) < radius) {   //if candidate is in the query range
+            tp = create_point(popped->current_node.x[0], popped->current_node.x[1]);
             push_point(&res, tp);
         }
-        else {  //if not, divide the map
-            Rect map0, map1;
-            point center;
-
-            if (mode == 0) {    //divide x
-                map0.max_x = node->x[0];   map0.max_y = map.max_y;    //left
-                map0.min_x = map.min_x;    map0.min_y = map.min_y;
-                map1.max_x = map.max_x;    map1.max_y = map.max_y;    //right
-                map1.min_x = node->x[0];   map1.min_y = map.min_y;
-                center.x = node->x[0];   center.y = node->x[1];
-                overlap_flag = check_map_overlap(center, radius, map0, map1);
-                mode = 1;
-            }
-            else {  //divide y
-                map0.max_x = map.max_x;   map0.max_y = map.max_y;    //top
-                map0.min_x = map.min_x;   map0.min_y = node->x[1];
-                map1.max_x = map.max_x;   map1.max_y = node->x[1];    //bottom
-                map1.min_x = map.min_x;   map1.min_y = map.min_y;
-                center.x = node->x[0];   center.y = node->x[1];
-                overlap_flag = check_map_overlap(center, radius, map0, map1);
-                mode = 0;
-            }
-
-            if (overlap_flag == -1) {
-                printf("no overlap\n");
-            }
-            else if (overlap_flag == 0) {
-                printf("check only map1\n");
-            }
-            else if (overlap_flag == 1) {
-                printf("check only map2\n");
-            }
-            else if (overlap_flag == 2) {
-                printf("check both rectangles\n");
-            }
-            else {
-                printf("something wrong with function check_map_overlap\n");
-            }
+        //then, divide the map
+        if (mode == 0) {    //divide x
+            map0.max_x = node->x[0];   map0.max_y = map.max_y;    //left
+            map0.min_x = map.min_x;    map0.min_y = map.min_y;
+            map1.max_x = map.max_x;    map1.max_y = map.max_y;    //right
+            map1.min_x = node->x[0];   map1.min_y = map.min_y;
+            center.x = node->x[0];   center.y = node->x[1];
+            overlap_flag = check_map_overlap(center, radius, map0, map1);
+            mode = 1;
         }
+        else {  //divide y
+            map0.max_x = map.max_x;   map0.max_y = node->x[1];  //bottom
+            map0.min_x = map.min_x;   map0.min_y = map.min_y;
+            map1.max_x = map.max_x;   map1.max_y = map.max_y;    //top
+            map1.min_x = map.min_x;   map1.min_y = node->x[1];
+            center.x = node->x[0];   center.y = node->x[1];
+            overlap_flag = check_map_overlap(center, radius, map0, map1);
+            mode = 0;
+        }
+
+        if (overlap_flag == -1) {
+            printf("no overlap\n");
+        }
+        else if (overlap_flag == 0) {
+            printf("check only map0\n");
+            new_node = kd_create_node((*root), map0);
+            kdstack_push(&kd_st, new_node);
+            ptr[0] = root->left;
+            ptr[1] = NULL;
+        }
+        else if (overlap_flag == 1) {
+            printf("check only map1\n");
+            new_node = kd_create_node((*root), map1);
+            kdstack_push(&kd_st, new_node);
+            ptr[0] = NULL;
+            ptr[1] = root->right;
+        }
+        else if (overlap_flag == 2) {
+            printf("check both rectangles\n");
+            new_node = kd_create_node((*root), map0);
+            kdstack_push(&kd_st, new_node);
+            new_node = kd_create_node((*root), map1);
+            kdstack_push(&kd_st, new_node);
+            ptr[0] = root->left;
+            ptr[1] = root->right;
+        }
+        else {
+            printf("something wrong with function check_map_overlap\n");
+        }
+
+        /*test start : suppose to end with nothing in stack and two area divided by (7,2)*/
+        //printf("map0 : (%lf, %lf)~(%lf, %lf)\n\n\nmap1 : (%lf, %lf)~(%lf, %lf)\n", map0.min_x, map0.min_y, map0.max_x, map0.max_y, map1.min_x, map1.min_y, map1.max_x, map1.max_y);
+        //return res;
+        /*test done*/
     }
     
     return res;

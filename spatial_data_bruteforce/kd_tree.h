@@ -21,7 +21,7 @@ struct kd_node_t* find_median(struct kd_node_t* start, struct kd_node_t* end, in
 struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim);
 
 void kdstack_push(struct candidate_node** head, struct candidate_node* n_p);
-struct kd_node_t* kdstack_pop(struct candidate_node** head);
+struct candidate_node* kdstack_pop(struct candidate_node** head);
 struct candidate_node* kd_create_node(struct kd_node_t kd_node, Rect r);
 
 int check_map_overlap(point center, double radius, Rect map1, Rect map2);

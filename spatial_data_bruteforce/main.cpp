@@ -58,9 +58,10 @@ int main() {
 #endif
 	}
 	else if (MODE == KD_TREE) {
-		kd_node_t* kd_l = NULL;
-		kd_node_t* kd_t = NULL;
-		kd_node_t* kd_res;
+		struct kd_node_t* kd_l = NULL;
+		struct kd_node_t* kd_t = NULL;
+		struct kd_node_t* input = (struct kd_node_t*)malloc(sizeof(struct kd_node_t));
+		struct point* kd_res;
 
 		int len = read_dataset_kd(&kd_l, INPUT_FILE_NAME);
 		if (!len) {
@@ -74,7 +75,12 @@ int main() {
 
 #endif
 #if QUERY == RANGE
-		
+		input->x[0] = 7;	input->x[1] = 5;
+		kd_res = rangeQuery_kd(kd_t, input, 1, 0);
+		printf("stack : ");
+		while (kd_res) {
+			printf("(%lf, %lf)   ", kd_res->x, kd_res->y);
+		}
 #endif
 #if QUERY == KNN
 
