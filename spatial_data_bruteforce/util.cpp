@@ -140,3 +140,7 @@ int pop_point(point** head, point* tar) {
 
 	return 0;
 }
+
+
+
+

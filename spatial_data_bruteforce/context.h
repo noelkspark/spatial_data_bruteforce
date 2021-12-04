@@ -30,3 +30,8 @@ struct candidate_node{
 	struct candidate_node* pre;
 	struct kd_node_t* ptr;
 };
+
+struct kd_heap_node {
+	struct kd_node_t node;
+	double distance;
+};

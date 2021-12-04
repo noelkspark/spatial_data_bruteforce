@@ -267,7 +267,6 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
     struct candidate_node* popped;
     int overlap_flag;
     double min_dist = DBL_MAX;
-    struct candidate_node* tmp = NULL;
     
     point* res = (point*)malloc(sizeof(point));
     point* tp;
@@ -292,7 +291,8 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
 
         if (dist(&(popped->current_node), node, 2) <= min_dist) {   //if NN candidate
             min_dist = dist(&(popped->current_node), node, 2);      //store the distance of the NN candidate
-            tmp = popped;                                           //store the ptr of the NN candidate
+            tp = create_point(popped->current_node.x[0], popped->current_node.x[1]);
+            push_point(&res, tp);
         }
         //then, divide the map
         if (mode == 0) {    //divide x
@@ -313,7 +313,6 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
             overlap_flag = check_map_overlap(center, min_dist, map0, map1);
             mode = 0;
         }
-
         if (overlap_flag == -1) {
             printf("no overlap\n");
         }
@@ -352,10 +351,54 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
         /*test done*/
     }
 
-    tp = create_point(tmp->current_node.x[0], tmp->current_node.x[1]);    //store the final NN
-    push_point(&res, tp);
-
     return res;
+}
+
+void h_swap(kd_heap_node* a, kd_heap_node* b) {
+    kd_heap_node tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void heap_push(kd_heap_node* heap, kd_heap_node node, int* cnt) {
+    (*cnt)++;
+    heap[*cnt] = node;
+
+    int child = *cnt;
+    int parent = child / 2;
+
+    while (child > 1 && heap[child].distance > heap[parent].distance) {
+        h_swap(&heap[child], &heap[parent]);
+        child = parent;
+        parent = child / 2;
+    }
+
+}
+
+kd_heap_node heap_pop(kd_heap_node* heap, int* cnt) {
+    kd_heap_node ret = heap[1];
+
+    h_swap(&heap[1], &heap[*cnt]);
+    (*cnt)--;
+
+    int parent = 1;
+    int child = parent * 2;
+
+    if (child + 1 <= *cnt) {
+        child = (heap[child].distance > heap[child + 1].distance) ? child : child + 1;
+    }
+
+    while (child <= *cnt && heap[child].distance> heap[parent].distance) {
+        h_swap(&heap[child], &heap[parent]);
+        parent = child;
+        child = parent * 2;
+
+        if (child + 1 <= *cnt) {
+            child = (heap[child].distance > heap[child + 1].distance) ? child : child + 1;
+        }
+    }
+
+    return ret;
 }
 
 int read_dataset_kd(struct kd_node_t** t, const char* file_name) {

@@ -30,6 +30,10 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* p, double radius,
 
 point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* p, int K, int mode);
 
+void h_swap(kd_heap_node* a, kd_heap_node* b);
+void heap_push(kd_heap_node* heap, kd_heap_node val, int* cnt);
+kd_heap_node heap_pop(kd_heap_node* heap, int* cnt);
+
 int read_dataset_kd(struct kd_node_t**, const char* filename);
 
 void print_preorder_kd(struct kd_node_t*);
