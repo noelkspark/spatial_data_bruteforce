@@ -84,7 +84,15 @@ int main() {
 		}
 #endif
 #if QUERY == KNN
-
+		int K = 1;
+		input->x[0] = 7;	input->x[1] = 6;
+		kd_res = kNNquery_kd(kd_t, input, K, 0);
+		printf("stack : ");
+		while (kd_res) {
+			printf("(%lf, %lf)   ", kd_res->x, kd_res->y);
+			kd_res = kd_res->next;
+		}
+		
 #endif
 	}
 	else if (MODE == R_TREE) {

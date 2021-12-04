@@ -258,10 +258,104 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
 }
 
 //kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
-void kNNquery_kd(struct kd_node_t* p, int K)
-{
-   
+point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mode) {
+    struct candidate_node* kd_st = NULL;
+    Rect map;
+    Rect map0, map1;
+    point center;
+    struct candidate_node* new_node;
+    struct candidate_node* popped;
+    int overlap_flag;
+    double min_dist = DBL_MAX;
+    struct candidate_node* tmp = NULL;
+    
+    point* res = (point*)malloc(sizeof(point));
+    point* tp;
 
+    map.max_x = map.max_y = DBL_MAX;    //init map
+    map.min_x = map.min_y = 0.0;
+
+    res = NULL;
+
+    new_node = kd_create_node(*root, map, root);   //coordinate date of tmp is used only
+    kdstack_push(&kd_st, new_node); //root pushed
+
+    while (popped = kdstack_pop(&kd_st)) {
+
+        map = popped->rec;  //current map
+        root = popped->ptr; //node where we should start from
+
+        /*for test*/
+        double test = dist(&(popped->current_node), node, 2);
+        printf("distance between (%lf, %lf) and (%lf, %lf) = %lf\n\n", popped->current_node.x[0], popped->current_node.x[1], node->x[0], node->x[1], test);
+        /*test done*/
+
+        if (dist(&(popped->current_node), node, 2) <= min_dist) {   //if NN candidate
+            min_dist = dist(&(popped->current_node), node, 2);      //store the distance of the NN candidate
+            tmp = popped;                                           //store the ptr of the NN candidate
+        }
+        //then, divide the map
+        if (mode == 0) {    //divide x
+            map0.max_x = node->x[0];   map0.max_y = map.max_y;    //left
+            map0.min_x = map.min_x;    map0.min_y = map.min_y;
+            map1.max_x = map.max_x;    map1.max_y = map.max_y;    //right
+            map1.min_x = node->x[0];   map1.min_y = map.min_y;
+            center.x = node->x[0];   center.y = node->x[1];
+            overlap_flag = check_map_overlap(center, min_dist, map0, map1);
+            mode = 1;
+        }
+        else {  //divide y
+            map0.max_x = map.max_x;   map0.max_y = node->x[1];  //bottom
+            map0.min_x = map.min_x;   map0.min_y = map.min_y;
+            map1.max_x = map.max_x;   map1.max_y = map.max_y;    //top
+            map1.min_x = map.min_x;   map1.min_y = node->x[1];
+            center.x = node->x[0];   center.y = node->x[1];
+            overlap_flag = check_map_overlap(center, min_dist, map0, map1);
+            mode = 0;
+        }
+
+        if (overlap_flag == -1) {
+            printf("no overlap\n");
+        }
+        else if (overlap_flag == 0) {
+            printf("check only map0\n");
+            if (root->left != NULL) {
+                new_node = kd_create_node((*root), map0, root->left);
+                kdstack_push(&kd_st, new_node);
+            }
+        }
+        else if (overlap_flag == 1) {
+            printf("check only map1\n");
+            if (root->right != NULL) {
+                new_node = kd_create_node((*root), map1, root->right);
+                kdstack_push(&kd_st, new_node);
+            }
+        }
+        else if (overlap_flag == 2) {
+            printf("check both rectangles\n");
+            if (root->left != NULL) {
+                new_node = kd_create_node((*root), map0, root->left);
+                kdstack_push(&kd_st, new_node);
+            }
+            if (root->right != NULL) {
+                new_node = kd_create_node((*root), map1, root->right);
+                kdstack_push(&kd_st, new_node);
+            }
+        }
+        else {
+            printf("something wrong with function check_map_overlap\n");
+        }
+
+        /*test start : suppose to end with nothing in stack and two area divided by (7,2)*/
+        //printf("map0 : (%lf, %lf)~(%lf, %lf)\n\n\nmap1 : (%lf, %lf)~(%lf, %lf)\n", map0.min_x, map0.min_y, map0.max_x, map0.max_y, map1.min_x, map1.min_y, map1.max_x, map1.max_y);
+        //return res;
+        /*test done*/
+    }
+
+    tp = create_point(tmp->current_node.x[0], tmp->current_node.x[1]);    //store the final NN
+    push_point(&res, tp);
+
+    return res;
 }
 
 int read_dataset_kd(struct kd_node_t** t, const char* file_name) {

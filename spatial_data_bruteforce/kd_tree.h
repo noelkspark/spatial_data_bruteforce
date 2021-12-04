@@ -28,7 +28,7 @@ int check_map_overlap(point center, double radius, Rect map1, Rect map2);
 
 point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* p, double radius, int mode);
 
-void kNNquery_kd(struct kd_node_t* p, int K);
+point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* p, int K, int mode);
 
 int read_dataset_kd(struct kd_node_t**, const char* filename);
 
