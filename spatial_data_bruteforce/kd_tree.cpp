@@ -93,7 +93,7 @@ struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim)
     return n;
 }
 
-struct candidate_node* kd_create_node(kd_node_t node, Rect r, struct kd_node_t* ptr) {
+struct candidate_node* kd_create_node(kd_node_t node, Rect r, struct kd_node_t* ptr, int mode) {
     struct candidate_node* new_node = (struct candidate_node*)malloc(sizeof(struct candidate_node));
 
     new_node->current_node = node;
@@ -101,22 +101,28 @@ struct candidate_node* kd_create_node(kd_node_t node, Rect r, struct kd_node_t* 
     new_node->pre = NULL;
     new_node->next = NULL;
     new_node->ptr = ptr;
- 
+    new_node->mode = mode;
     return new_node;
 }
 
-void kdstack_push(struct candidate_node** kdt, struct candidate_node* n_p) {
-    if (*kdt == NULL) {
-        *kdt = n_p;
+void kdstack_push(struct candidate_node** kdst, struct candidate_node* n_p) {
+    printf("pushing %p\n", n_p);
+    if (*kdst == NULL) {
+        *kdst = n_p;
         return;
     }
-    struct candidate_node* tmp = (*kdt);
-    (*kdt) = n_p;
-    n_p->next = tmp;
-    tmp->pre = n_p;
+
+    n_p->next = *kdst;
+    (*kdst)->pre = n_p;
+    *kdst = n_p;
 }
 
 struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
+   
+    if (!kdt) {
+        printf("somthing wrong\n\n\n\n");
+        return NULL;
+    }
     if ((*kdt) == NULL) {
         fprintf(stdout, "nothing to pop, EMPTY\n");
         return NULL;
@@ -124,10 +130,8 @@ struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
 
     struct candidate_node* point_to_be_popped = *kdt;
     struct candidate_node* res = (struct candidate_node*)malloc(sizeof(struct candidate_node));
-    struct candidate_node tmp;
 
-    tmp = **kdt;
-    *res = tmp;
+    *res = **kdt;
 
     if ((*kdt)->next != NULL) {
         (*kdt) = (*kdt)->next;
@@ -136,7 +140,8 @@ struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
     else {
         (*kdt) = NULL;
     }
-    free(point_to_be_popped);
+   
+   // free(point_to_be_popped);
 
     return res;
 }
@@ -179,21 +184,21 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
 
     res = NULL;
     
-    new_node = kd_create_node(*root, map, root);   //coordinate date of tmp is used only
+    new_node = kd_create_node(*root, map, root, mode);   //coordinate date of tmp is used only
     kdstack_push(&kd_st, new_node); //root pushed
     
     while (popped = kdstack_pop(&kd_st)) {
 
         map = popped->rec;  //current map
         root = popped->ptr; //node where we should start from
-
+        mode = popped->mode;//current mode
         /*for test*/
-        double test = dist(&(popped->current_node), node, 2);
-        printf("distance between (%lf, %lf) and (%lf, %lf) = %lf\n\n", popped->current_node.x[0], popped->current_node.x[1], node->x[0], node->x[1], test);
+        double test = dist(root, node, 2);
+        printf("distance between (%lf, %lf) and (%lf, %lf) = %lf\n\n", root->x[0], root->x[1], node->x[0], node->x[1], test);
         /*test done*/
 
-        if (dist(&(popped->current_node), node, 2) <= radius) {   //if candidate is in the query range
-            tp = create_point(popped->current_node.x[0], popped->current_node.x[1]);
+        if (dist(root, node, 2) <= radius) {   //if candidate is in the query range
+            tp = create_point(root->x[0], root->x[1]);
             push_point(&res, tp);
         }
         //then, divide the map
@@ -215,32 +220,32 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
             overlap_flag = check_map_overlap(center, radius, map0, map1);
             mode = 0;
         }
-
+        
         if (overlap_flag == -1) {
             printf("no overlap\n");
         }
         else if (overlap_flag == 0) {
             printf("check only map0\n");
             if (root->left != NULL) {
-                new_node = kd_create_node((*root), map0, root->left);
+                new_node = kd_create_node((*root), map0, root->left, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
         else if (overlap_flag == 1) {
             printf("check only map1\n");
             if (root->right != NULL) {
-                new_node = kd_create_node((*root), map1, root->right);
+                new_node = kd_create_node((*root), map1, root->right, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
         else if (overlap_flag == 2) {
             printf("check both rectangles\n");
             if (root->left != NULL) {
-                new_node = kd_create_node((*root), map0, root->left);
+                new_node = kd_create_node((*root), map0, root->left, mode);
                 kdstack_push(&kd_st, new_node);
             }
             if (root->right != NULL) {
-                new_node = kd_create_node((*root), map1, root->right);
+                new_node = kd_create_node((*root), map1, root->right, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
@@ -252,13 +257,15 @@ point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* node, double radi
         //printf("map0 : (%lf, %lf)~(%lf, %lf)\n\n\nmap1 : (%lf, %lf)~(%lf, %lf)\n", map0.min_x, map0.min_y, map0.max_x, map0.max_y, map1.min_x, map1.min_y, map1.max_x, map1.max_y);
         //return res;
         /*test done*/
+    
+        //free(popped);
     }
     
     return res;
 }
 
 //kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
-point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mode) {
+kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mode, int* heap_cnt) {
     struct candidate_node* kd_st = NULL;
     Rect map;
     Rect map0, map1;
@@ -266,33 +273,42 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
     struct candidate_node* new_node;
     struct candidate_node* popped;
     int overlap_flag;
-    double min_dist = DBL_MAX;
-    
-    point* res = (point*)malloc(sizeof(point));
-    point* tp;
+    double max_mindist = DBL_MAX;
+
+    kd_heap_node* mheap = (kd_heap_node*)malloc(sizeof(kd_heap_node) * (K + 1)); 
+    kd_heap_node htmp;
+    kd_node_t ttmp;
 
     map.max_x = map.max_y = DBL_MAX;    //init map
-    map.min_x = map.min_y = 0.0;
+    map.min_x = map.min_y = 0;
 
-    res = NULL;
-
-    new_node = kd_create_node(*root, map, root);   //coordinate date of tmp is used only
+    new_node = kd_create_node(*root, map, root, mode);   //coordinate date of tmp is used only
     kdstack_push(&kd_st, new_node); //root pushed
-
     while (popped = kdstack_pop(&kd_st)) {
-
         map = popped->rec;  //current map
         root = popped->ptr; //node where we should start from
-
+        mode = popped->mode;//current mode
+        if (!root)
+           continue;
         /*for test*/
-        double test = dist(&(popped->current_node), node, 2);
-        printf("distance between (%lf, %lf) and (%lf, %lf) = %lf\n\n", popped->current_node.x[0], popped->current_node.x[1], node->x[0], node->x[1], test);
+        double test = dist(root, node, 2);
+        printf("distance between (%lf, %lf) and (%lf, %lf) = %lf\n\n",root->x[0], root->x[1], node->x[0], node->x[1], test);
         /*test done*/
-
-        if (dist(&(popped->current_node), node, 2) <= min_dist) {   //if NN candidate
-            min_dist = dist(&(popped->current_node), node, 2);      //store the distance of the NN candidate
-            tp = create_point(popped->current_node.x[0], popped->current_node.x[1]);
-            push_point(&res, tp);
+        //printf("max_mindist : %lf\n", max_mindist);
+        if (dist(root, node, 2) <= max_mindist) {   //if NN candidate
+            htmp.distance = dist(root, node, 2);
+            ttmp.x[0] = root->x[0];
+            ttmp.x[1] = root->x[1];
+            htmp.node = ttmp;
+            fprintf(stdout, "pushing (%lf %lf) in main\n", ttmp.x[0], ttmp.x[1]);
+            if (*heap_cnt >= K) { //if KNN heap is full
+                kd_heap_node poppedheapnode;
+                poppedheapnode = maxheap_pop(mheap, heap_cnt);
+                fprintf(stdout, "popped (%lf %lf) in main\n", poppedheapnode.node.x[0], poppedheapnode.node.x[1]);
+            }
+            //fprintf(stdout, "pushing in main (%lf)\n", htmp.distance);
+            maxheap_push(mheap, htmp, heap_cnt);   //push new node
+            max_mindist = mheap[1].distance;
         }
         //then, divide the map
         if (mode == 0) {    //divide x
@@ -301,7 +317,7 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
             map1.max_x = map.max_x;    map1.max_y = map.max_y;    //right
             map1.min_x = node->x[0];   map1.min_y = map.min_y;
             center.x = node->x[0];   center.y = node->x[1];
-            overlap_flag = check_map_overlap(center, min_dist, map0, map1);
+            overlap_flag = check_map_overlap(center, max_mindist, map0, map1);
             mode = 1;
         }
         else {  //divide y
@@ -310,7 +326,7 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
             map1.max_x = map.max_x;   map1.max_y = map.max_y;    //top
             map1.min_x = map.min_x;   map1.min_y = node->x[1];
             center.x = node->x[0];   center.y = node->x[1];
-            overlap_flag = check_map_overlap(center, min_dist, map0, map1);
+            overlap_flag = check_map_overlap(center, max_mindist, map0, map1);
             mode = 0;
         }
         if (overlap_flag == -1) {
@@ -319,25 +335,25 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
         else if (overlap_flag == 0) {
             printf("check only map0\n");
             if (root->left != NULL) {
-                new_node = kd_create_node((*root), map0, root->left);
+                new_node = kd_create_node((*root), map0, root->left, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
         else if (overlap_flag == 1) {
             printf("check only map1\n");
             if (root->right != NULL) {
-                new_node = kd_create_node((*root), map1, root->right);
+                new_node = kd_create_node((*root), map1, root->right, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
         else if (overlap_flag == 2) {
             printf("check both rectangles\n");
             if (root->left != NULL) {
-                new_node = kd_create_node((*root), map0, root->left);
+                new_node = kd_create_node((*root), map0, root->left, mode);
                 kdstack_push(&kd_st, new_node);
             }
             if (root->right != NULL) {
-                new_node = kd_create_node((*root), map1, root->right);
+                new_node = kd_create_node((*root), map1, root->right, mode);
                 kdstack_push(&kd_st, new_node);
             }
         }
@@ -345,13 +361,15 @@ point* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K, int mo
             printf("something wrong with function check_map_overlap\n");
         }
 
+       
+        //free(popped);
         /*test start : suppose to end with nothing in stack and two area divided by (7,2)*/
         //printf("map0 : (%lf, %lf)~(%lf, %lf)\n\n\nmap1 : (%lf, %lf)~(%lf, %lf)\n", map0.min_x, map0.min_y, map0.max_x, map0.max_y, map1.min_x, map1.min_y, map1.max_x, map1.max_y);
         //return res;
         /*test done*/
     }
 
-    return res;
+    return mheap;
 }
 
 void h_swap(kd_heap_node* a, kd_heap_node* b) {
@@ -360,9 +378,9 @@ void h_swap(kd_heap_node* a, kd_heap_node* b) {
     *b = tmp;
 }
 
-void heap_push(kd_heap_node* heap, kd_heap_node node, int* cnt) {
+void maxheap_push(kd_heap_node* heap, kd_heap_node node, int* cnt) {
     (*cnt)++;
-    heap[*cnt] = node;
+    heap[(*cnt)] = node;
 
     int child = *cnt;
     int parent = child / 2;
@@ -372,12 +390,12 @@ void heap_push(kd_heap_node* heap, kd_heap_node node, int* cnt) {
         child = parent;
         parent = child / 2;
     }
-
+    printf("pushed heap : (%lf)\n",node.distance);
 }
 
-kd_heap_node heap_pop(kd_heap_node* heap, int* cnt) {
+kd_heap_node maxheap_pop(kd_heap_node* heap, int* cnt) {
     kd_heap_node ret = heap[1];
-
+    printf("heap popping (%lf)\n", ret.distance);
     h_swap(&heap[1], &heap[*cnt]);
     (*cnt)--;
 
@@ -395,6 +413,47 @@ kd_heap_node heap_pop(kd_heap_node* heap, int* cnt) {
 
         if (child + 1 <= *cnt) {
             child = (heap[child].distance > heap[child + 1].distance) ? child : child + 1;
+        }
+    }
+
+    return ret;
+}
+
+void minheap_push(kd_heap_node* heap, kd_heap_node node, int* cnt) {
+    (*cnt)++;
+    heap[*cnt] = node;
+
+    int child = *cnt;
+    int parent = child / 2;
+
+    while (child > 1 && heap[child].distance < heap[parent].distance) {
+        h_swap(&heap[child], &heap[parent]);
+        child = parent;
+        parent = child / 2;
+    }
+
+}
+
+kd_heap_node minheap_pop(kd_heap_node* heap, int* cnt) {
+    kd_heap_node ret = heap[1];
+
+    h_swap(&heap[1], &heap[*cnt]);
+    (*cnt)--;
+
+    int parent = 1;
+    int child = parent * 2;
+
+    if (child + 1 <= *cnt) {
+        child = (heap[child].distance < heap[child + 1].distance) ? child : child + 1;
+    }
+
+    while (child <= *cnt && heap[child].distance < heap[parent].distance) {
+        h_swap(&heap[child], &heap[parent]);
+        parent = child;
+        child = parent * 2;
+
+        if (child + 1 <= *cnt) {
+            child = (heap[child].distance < heap[child + 1].distance) ? child : child + 1;
         }
     }
 

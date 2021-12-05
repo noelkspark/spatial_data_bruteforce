@@ -61,7 +61,6 @@ int main() {
 		struct kd_node_t* kd_l = NULL;
 		struct kd_node_t* kd_t = NULL;
 		struct kd_node_t* input = (struct kd_node_t*)malloc(sizeof(struct kd_node_t));
-		struct point* kd_res = NULL;
 
 		int len = read_dataset_kd(&kd_l, INPUT_FILE_NAME);
 		if (!len) {
@@ -75,8 +74,9 @@ int main() {
 
 #endif
 #if QUERY == RANGE
+		struct point* kd_rangeQres = NULL;
 		input->x[0] = 7;	input->x[1] = 6;
-		kd_res = rangeQuery_kd(kd_t, input, 2, 0);
+		kd_rangeQres = rangeQuery_kd(kd_t, input, 2, 0);
 		printf("stack : ");
 		while (kd_res) {
 			printf("(%lf, %lf)   ", kd_res->x, kd_res->y);
@@ -84,13 +84,16 @@ int main() {
 		}
 #endif
 #if QUERY == KNN
-		int K = 1;
+		kd_heap_node* kd_KNNres = NULL;
+		kd_heap_node tmp;
+		int heap_cnt = 0;
+		int K = 2;
 		input->x[0] = 7;	input->x[1] = 6;
-		kd_res = kNNquery_kd(kd_t, input, K, 0);
-		printf("stack : ");
-		while (kd_res) {
-			printf("(%lf, %lf)   ", kd_res->x, kd_res->y);
-			kd_res = kd_res->next;
+		kd_KNNres = kNNquery_kd(kd_t, input, K, 0, &heap_cnt);
+		printf("\n%d elements in stack : ", K);
+		for (int i = 0; i < K; i++) {
+			tmp = maxheap_pop(kd_KNNres, &heap_cnt);
+			printf("(%lf, %lf)   ", tmp.node.x[0], tmp.node.x[1]);
 		}
 		
 #endif

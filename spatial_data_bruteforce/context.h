@@ -29,9 +29,10 @@ struct candidate_node{
 	struct candidate_node* next;
 	struct candidate_node* pre;
 	struct kd_node_t* ptr;
+	int mode;
 };
 
-struct kd_heap_node {
+typedef struct kd_heap_node {
 	struct kd_node_t node;
 	double distance;
-};
+}kd_heap_node;

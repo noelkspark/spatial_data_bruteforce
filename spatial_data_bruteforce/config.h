@@ -1,4 +1,5 @@
 #define data_size 10000000
+#define MAX_HEAP_SIZE 100
 
 #define BRUTE_FORCE 0
 #define KD_TREE 1
@@ -31,4 +32,4 @@
 ////////// 2. GAUSSIAN_INPUT_FILE  /////////
 ////////// 3. UNIFORMED_INPUT_FILE /////////
 ////////// 4. TEST_INPUT_FILE ////////////// --> TEST YOUR OWN INPUT DATASET FILE
-#define INPUT_FILE_NAME TEST_INPUT_FILE
+#define TEST_INPUT_FILE
