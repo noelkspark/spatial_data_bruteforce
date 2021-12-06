@@ -30,6 +30,9 @@
     <ClCompile Include="r_tree.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="r_tree_query.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bruteforce.h">
@@ -48,6 +51,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="r_tree.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="r_tree_query.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

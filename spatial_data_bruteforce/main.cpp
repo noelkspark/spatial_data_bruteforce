@@ -6,7 +6,8 @@
 #include "config.h"
 #include "bruteforce.h"
 #include "kd_tree.h"
-//#include "r_tree.h"
+#include "r_tree.h"
+#include "r_tree_query.h"
 
 int main() {
 	
@@ -78,9 +79,9 @@ int main() {
 		input->x[0] = 7;	input->x[1] = 6;
 		kd_rangeQres = rangeQuery_kd(kd_t, input, 2, 0);
 		printf("stack : ");
-		while (kd_res) {
-			printf("(%lf, %lf)   ", kd_res->x, kd_res->y);
-			kd_res = kd_res->next;
+		while (kd_rangeQres) {
+			printf("(%lf, %lf)   ", kd_rangeQres->x, kd_rangeQres->y);
+			kd_rangeQres = kd_rangeQres->next;
 		}
 #endif
 #if QUERY == KNN
@@ -99,11 +100,25 @@ int main() {
 #endif
 	}
 	else if (MODE == R_TREE) {
+		
 #if QUERY == DISTANCE
 
 #endif
 #if QUERY == RANGE
+		RTREENODE* root = RTreeCreate();
+		RTREEMBR search_rect = {
+			{0, 0, 0, 3, 3, 0}   /* search will find above rects that this one overlaps */
+		};
+		point* head = NULL;
+		int len;
+		int nhits;
+		len =  RTree_ReadData(&head, INPUT_FILE_NAME);
 
+		construct_rtree(&root, head, len);
+		
+		nhits = RTreeSearch(root, &search_rect, MySearchCallback, 0);
+		printf("%d\n", nhits);
+		
 #endif
 #if QUERY == KNN
 

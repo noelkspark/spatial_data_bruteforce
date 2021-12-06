@@ -52,7 +52,7 @@ point* create_point(double x, double y) {
 	new_p->y = y;
 	new_p->pre = NULL;
 	new_p->next = NULL;
-	printf("point (%lf %lf) created\n", x, y);
+	//printf("point (%lf %lf) created\n", x, y);
 	return new_p;
 }
 void push_point(point** head, point* n_p) {
@@ -61,19 +61,19 @@ void push_point(point** head, point* n_p) {
 
 	if (*head == NULL) {
 		*head = n_p;
-		printf("first element (%lf, %lf) pushed\n", n_p->x, n_p->y);
+		//printf("first element (%lf, %lf) pushed\n", n_p->x, n_p->y);
 		return;
 	}
 
 	while ((*head)->next != NULL) {
-		printf("moving, current element is (%lf ,%lf)\n", (*head)->x, (*head)->y);
+		//printf("moving, current element is (%lf ,%lf)\n", (*head)->x, (*head)->y);
 		(*head) = (*head)->next;
-		printf("moved to (%lf, %lf)\n", (*head)->x, (*head)->y);
+		//printf("moved to (%lf, %lf)\n", (*head)->x, (*head)->y);
 	}
 
 	(*head)->next = n_p;
 	n_p->pre = *head;
-	printf("element %lf %lf pushed\n", n_p->x, n_p->y);
+	//printf("element %lf %lf pushed\n", n_p->x, n_p->y);
 
 	*head = tmp;
 }

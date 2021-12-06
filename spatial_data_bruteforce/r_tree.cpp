@@ -680,10 +680,13 @@ int RTreeOverlap(RTREEMBR* rc1, RTREEMBR* rc2)
     int i, j;
     assert(rc1 && rc2);
 
+    printf("rc1 bound (%lf %lf) ~ (%lf %lf) , rc2 bound (%lf %lf) ~ (%lf %lf)\n",
+        rc1->bound[0], rc1->bound[1], rc1->bound[3], rc1->bound[4], rc2->bound[0], rc2->bound[1], rc2->bound[3], rc2->bound[4]);
+    
     for (i = 0; i < DIMS_NUMB; i++)
     {
         j = i + DIMS_NUMB;  /* index for high sides */
-
+        
         if (rc1->bound[i] > rc2->bound[j] || rc2->bound[i] > rc1->bound[j])
             return FALSE;
     }
@@ -1039,7 +1042,7 @@ int RTreeInsertRect(RTREEMBR* rc, int tid, RTREENODE** root, int level)
     if (_RTreeInsertRect(rc, tid, *root, &newnode, level))
     {
         newroot = RTreeNewNode();  /* grow a new root, & tree taller */
-        newroot->level = (*root)->level + 1;
+        newroot->level = (*root)->level + 1; 
         b.mbr = RTreeNodeCover(*root);
         b.child = *root;
         RTreeAddBranch(&b, newroot, NULL);
