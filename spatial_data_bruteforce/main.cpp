@@ -3,17 +3,28 @@
 
 #include<stdio.h>
 #include<stdlib.h>
+#include <time.h>
+#include <Windows.h>
+
 #include "config.h"
 #include "bruteforce.h"
 #include "kd_tree.h"
 #include "r_tree.h"
 #include "r_tree_query.h"
 
+extern point* rtree_RQ_res;
+__int64 _start, _freq, _end;
+float compute_time;
+
+#define CHECK_TIME_START(start,freq) QueryPerformanceFrequency((LARGE_INTEGER*)&freq); QueryPerformanceCounter((LARGE_INTEGER*)&start)
+#define CHECK_TIME_END(start,end,freq,time) QueryPerformanceCounter((LARGE_INTEGER*)&end); time = (float)((float)(end - start) / (freq * 1.0e-3f))
+
 int main() {
 	
 	if (MODE == BRUTE_FORCE) {
-		point* head = NULL;
 
+		point* head = NULL;
+		
 		read_dataset_bf(&head, INPUT_FILE_NAME);
 
 #if QUERY == DISTANCE
@@ -33,7 +44,9 @@ int main() {
 		qp.x = 2.3;	qp.y = 2.3;
 		int num = 0;
 
+		CHECK_TIME_START(_start, _freq);
 		res = rangeQuery(head, qp, 3);
+		CHECK_TIME_END(_start, _end, _freq, compute_time);
 		fprintf(stdout, "\nrangeQuery result : \n\n");
 		while (res) {
 			printf("(%lf, %lf)\n", res->x, res->y);
@@ -116,8 +129,20 @@ int main() {
 
 		construct_rtree(&root, head, len);
 		
+		/*
 		nhits = RTreeSearch(root, &search_rect, MySearchCallback, 0);
 		printf("%d\n", nhits);
+		*/
+		point qp;
+		qp.x = 7;	qp.y = 6;
+	
+		nhits = RTree_RangeQuery(root, qp, 2);
+		printf("%d hits\n", nhits);
+
+		while (rtree_RQ_res) {
+			printf("%lf %lf\n", rtree_RQ_res->x, rtree_RQ_res->y);
+			rtree_RQ_res = rtree_RQ_res->next;
+		}
 		
 #endif
 #if QUERY == KNN

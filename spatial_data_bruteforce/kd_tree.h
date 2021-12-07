@@ -34,7 +34,7 @@ void h_swap(kd_heap_node* a, kd_heap_node* b);
 void maxheap_push(kd_heap_node* heap, kd_heap_node val, int* cnt);
 kd_heap_node maxheap_pop(kd_heap_node* heap, int* cnt);
 
-void maxheap_push(kd_heap_node* heap, kd_heap_node val, int* cnt);
+void minheap_push(kd_heap_node* heap, kd_heap_node val, int* cnt);
 kd_heap_node minheap_pop(kd_heap_node* heap, int* cnt);
 
 int read_dataset_kd(struct kd_node_t**, const char* filename);
