@@ -29,16 +29,7 @@ int main() {
 		
 		read_dataset_bf(&head, INPUT_FILE_NAME);
 
-#if QUERY == DISTANCE
-		/*distance query example*/
-		point p;
-		Rect r;
 
-		p.x = 2;	p.y = 2;
-		r.max_x = 1;	r.max_y = 1;	r.min_x = 0;	r.min_y = 0;
-
-		fprintf(stdout, "\ncalculated distance between point (%lf, %lf) | Rectangle (%lf, %lf) (%lf, %lf): %lf\n", p.x, p.y, r.min_x, r.min_y, r.max_x, r.max_y, rect_to_point_distance(p, r));
-#endif
 #if QUERY == RANGE
 		/*range query example*/
 		point qp;
@@ -90,9 +81,7 @@ int main() {
 		kd_t = make_kdtree(kd_l, len, 0, 2);	//x first
 		//print_preorder_kd(kd_t);			// TREE MADE
 	
-#if QUERY == DISTANCE
 
-#endif
 #if QUERY == RANGE
 		struct point* kd_rangeQres = NULL;
 		input->x[0] = 250.0;	input->x[1] = 250.0;
@@ -132,9 +121,7 @@ int main() {
 		len = RTree_ReadData(&head, INPUT_FILE_NAME);
 
 		construct_rtree(&root, head, len);
-#if QUERY == DISTANCE
 
-#endif
 #if QUERY == RANGE
 		
 		

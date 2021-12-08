@@ -5,9 +5,8 @@
 #define KD_TREE 1
 #define R_TREE 2
 
-#define DISTANCE 0
-#define RANGE 1
-#define KNN 2
+#define RANGE 0
+#define KNN 1
 
 #define	CLUSTERED_INPUT_FILE			"geospatial_data/clustered_dataset.txt" 
 #define	GAUSSIAN_INPUT_FILE				"geospatial_data/gaussian_dataset.txt" 
@@ -21,9 +20,8 @@
 ////////// 3. R_TREE ///////////////////////
 #define MODE R_TREE
 //////////*(2) CHOOSE QUERY*////////////////
-////////// 1. DISTANCE /////////////////////
-////////// 2. RANGE ////////////////////////
-////////// 3. KNN //////////////////////////
+////////// 1. RANGE ////////////////////////
+////////// 2. KNN //////////////////////////
 #define QUERY KNN
 
 //////////*(3) CHOOSE INPUT DATASET FILE*///
