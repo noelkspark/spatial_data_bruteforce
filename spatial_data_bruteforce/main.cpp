@@ -18,7 +18,7 @@ float compute_time;
 
 #define CHECK_TIME_START(start,freq) QueryPerformanceFrequency((LARGE_INTEGER*)&freq); QueryPerformanceCounter((LARGE_INTEGER*)&start)
 #define CHECK_TIME_END(start,end,freq,time) QueryPerformanceCounter((LARGE_INTEGER*)&end); time = (float)((float)(end - start) / (freq * 1.0e-3f))
-#define offset 0.01
+#define offset 0.1
 #define rad 100
 
 int main() {
@@ -34,7 +34,7 @@ int main() {
 		/*range query example*/
 		point qp;
 		point* res = NULL;
-		qp.x = 250.0;	qp.y = 250.0;
+		qp.x = 100.0;	qp.y = 100.0;
 
 		CHECK_TIME_START(_start, _freq);
 		rangeQuery(&res, head, qp, rad * offset);
@@ -55,12 +55,12 @@ int main() {
 		int num = 0;
 		
 		CHECK_TIME_START(_start, _freq);
-		res = kNNQuery(&head, qp, 10);
+		res = kNNQuery(&head, qp, 1);
 		CHECK_TIME_END(_start, _end, _freq, compute_time);
 		
 		//fprintf(stdout, "\nknnQuery result : \n\n");
 		while (res) {
-			//printf("%d: (%lf, %lf)\n", num, res->x, res->y);
+			printf("%d: (%lf, %lf), distance %lf\n", num, res->x, res->y);
 			res = res->next;
 			num++;
 		}  
@@ -84,7 +84,7 @@ int main() {
 
 #if QUERY == RANGE
 		struct point* kd_rangeQres = NULL;
-		input->x[0] = 250.0;	input->x[1] = 250.0;
+		input->x[0] = 100.0;	input->x[1] = 100.0;
 		int cnt = 0;
 		CHECK_TIME_START(_start, _freq);
 		rangeQuery_kd(&kd_rangeQres, kd_t, input, rad * offset, 0);
@@ -101,30 +101,25 @@ int main() {
 		kd_heap_node* kd_KNNres = NULL;
 		kd_heap_node tmp;
 		int heap_cnt = 0;
-		int K = 10;
+		int K = 1;
 		input->x[0] = 250.0;	input->x[1] = 250.0;
 		CHECK_TIME_START(_start, _freq);
 		kd_KNNres = kNNquery_kd(kd_t, input, K, 0, &heap_cnt);
 		CHECK_TIME_END(_start, _end, _freq, compute_time);
-		printf("\n%d elements in stack : ", K);
 #endif
 		printf("%5.3f seconds past\n\n", compute_time);
 	}
 	else if (MODE == R_TREE) {
 		RTREENODE* root = RTreeCreate();
-		RTREEMBR search_rect = {
-			{0, 0, 0, 3, 3, 0}   /* search will find above rects that this one overlaps */
-	};
+		
 		point* head = NULL;
 		int len;
-		int nhits;
+
 		len = RTree_ReadData(&head, INPUT_FILE_NAME);
 
 		construct_rtree(&root, head, len);
 
-#if QUERY == RANGE
-		
-		
+#if QUERY == RANGE	
 		/*
 		nhits = RTreeSearch(root, &search_rect, MySearchCallback, 0);
 		printf("%d\n", nhits);
@@ -132,20 +127,22 @@ int main() {
 		point qp;
 		qp.x = 250.0;	qp.y = 250.0;
 		int cnt = 0;
-		nhits = RTree_RangeQuery(root, qp, rad * offset);
-		printf("%d hits\n", nhits);
+		CHECK_TIME_START(_start, _freq);
+		RTree_RangeQuery(root, qp, rad * offset);
+		CHECK_TIME_END(_start, _end, _freq, compute_time);
 
 		while (rtree_RQ_res) {
 			cnt++;
 			rtree_RQ_res = rtree_RQ_res->next;
 		}
 		printf("%d\n", cnt);
+		printf("%f\n", compute_time);
 		
 #endif
 #if QUERY == KNN
 		point qp;
 		r_heap_node* res;
-		qp.x = 250.0;	qp.y = 250.0;
+		qp.x = 100.0;	qp.y = 100.0;
 		int cnt = 0;
 		CHECK_TIME_START(_start, _freq);
 		res = RTree_KNNQuery(root, qp, 10, &cnt);
@@ -153,12 +150,11 @@ int main() {
 		
 		printf("%d\n", cnt);
 		printf("%lf seconds\n", compute_time);
+
 #endif
 	}
 	else {
 		fprintf(stdout, "WRONG MODE\n");
 	}
-
-
 	return 0;
 }

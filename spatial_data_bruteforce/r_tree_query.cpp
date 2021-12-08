@@ -17,7 +17,7 @@ int MySearchCallback(int id, void* arg) {
     return 1; /* keep going */
 }
 
-static double mid(double x1,double x2, double x3){
+double mid(double x1,double x2, double x3){
 
     if(x1 <= x2)
         if(x2 <= x3)
@@ -34,80 +34,31 @@ static double mid(double x1,double x2, double x3){
         else 
             return x2;
 }
-double mbr_to_point_distance(RTREEMBR rec, point p) {
-    if (p.x <= rec.bound[3] && p.x >= rec.bound[0]) {
-        if (p.y <= rec.bound[1]) {
-            return rec.bound[1] - p.y;
-        }
-        else if (p.y >= rec.bound[4]) {
-            return p.y - rec.bound[4];
-        }
-        else {
-            //printf("Point is inside the Rectangle\n");
-            return 0.0;
-        }
-    }
-    else if (p.y <= rec.bound[4] && p.y >= rec.bound[1]) {
-        if (p.x <= rec.bound[1]) {
-            return rec.bound[1] - p.x;
-        }
-        else if (p.x >= rec.bound[3]) {
-            return p.x - rec.bound[3];
-        }
-        else {
-            //printf("Point is inside the Rectangle\n");
-            return 0.0;
-        }
-    }
-    else if (p.x <= rec.bound[0] && p.y <= rec.bound[1]) {
-        return sqrt(pow(p.x - rec.bound[0], 2) + pow(p.y - rec.bound[1], 2));
-    }
-    else if (p.x <= rec.bound[0] && p.y >= rec.bound[4]) {
-        return sqrt(pow(p.x - rec.bound[0], 2) + pow(p.y - rec.bound[4], 2));
-    }
-    else if (p.x >= rec.bound[3] && p.y >= rec.bound[4]) {
-        return sqrt(pow(p.x - rec.bound[3], 2) + pow(p.y - rec.bound[4], 2));
-    }
-    else if (p.x <= rec.bound[3] && p.y <= rec.bound[1]) {
-        return sqrt(pow(p.x - rec.bound[3], 2) + pow(p.y - rec.bound[1], 2));
-    }
-    else {
-        printf("Something is Wrong\n");
-    }
-}
 
-int RTree_RangeQuery(RTREENODE* head, point qp, double radius){
+void RTree_RangeQuery(RTREENODE* head, point qp, double radius){
 
-    /* Fix not yet tested. */
-    int obj_ref = 0;
-    int i, j;
+    int i;
+    double dist;
 
-    assert(head);
-    assert(head->level >= 0);
-
-    if (head->level > 0) /* this is an internal node in the tree */
-    {
+    if (head->level > 0) {
         for (i = 0; i < MAXCARD; i++) {
-            if (head->branch[i].child) {
-                ++obj_ref;
+            if (head->branch[i].child) {          
                 double min_x = mid(head->branch[i].mbr.bound[0], head->branch[i].mbr.bound[3], qp.x);
                 double min_y = mid(head->branch[i].mbr.bound[1], head->branch[i].mbr.bound[4], qp.y);
-                double dist = 0;
-
+                
                 dist = sqrt(pow(min_x - qp.x, 2) + pow(min_y - qp.y, 2));
-                if (dist <= radius)
-                    obj_ref += RTree_RangeQuery(head->branch[i].child, qp, radius);
+               
+                if (dist <= radius) {
+                    RTree_RangeQuery(head->branch[i].child, qp, radius);                 
+                }
 
             }
         }
     }
-    else /* this is a leaf node */
-    {
-        for (i = 0; i < MAXCARD; i++)
-        {
-            if (head->branch[i].child) {
-                ++obj_ref;
-                double dist = sqrt(pow(head->branch[i].mbr.bound[0] - qp.x, 2) + pow(head->branch[i].mbr.bound[1] - qp.y, 2));
+    else {
+        for (i = 0; i < MAXCARD; i++){
+            if (head->branch[i].child) {             
+                dist = sqrt(pow(head->branch[i].mbr.bound[0] - qp.x, 2) + pow(head->branch[i].mbr.bound[1] - qp.y, 2));
                 if (dist <= radius) {
                     point* node = create_point(head->branch[i].mbr.bound[0], head->branch[i].mbr.bound[1]);
                     push_point(&rtree_RQ_res, node);
@@ -115,9 +66,6 @@ int RTree_RangeQuery(RTREENODE* head, point qp, double radius){
             }
         }
     }
-    return obj_ref;
-
-	
 }
 
 r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
@@ -125,54 +73,56 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
     point center;
     struct r_candidate_node* new_node;
     struct r_candidate_node* popped;
-    int overlap_flag;
     double max_mindist = DBL_MAX;
     double tdist;
 
     r_heap_node* mheap = (r_heap_node*)malloc(sizeof(r_heap_node) * (K + 1));
     r_heap_node htmp;
 
-     new_node = r_create_node(*head, head);
+     new_node = r_create_node(head);
      rstack_push(&r_st, new_node); //root pushed
     
 
     while (popped = rstack_pop(&r_st)) {
         head = popped->ptr; //node where we should start from
-        tdist = popped->distance;
-        int cnt = head->count;
-        for (int i = 0; i < cnt; i++) {  //check children
-            if (!head)  //nothing to check
-                break;
 
-            double min_x = mid(head->branch[i].mbr.bound[0], head->branch[i].mbr.bound[3], qp.x);
-            double min_y = mid(head->branch[i].mbr.bound[1], head->branch[i].mbr.bound[4], qp.y);
-            tdist = sqrt(pow(min_x - qp.x, 2) + pow(min_y - qp.y, 2));
-
-            if (max_mindist > tdist) {
-                if (head->level == 0) { //if leaf node
-                    htmp.distance = tdist;
-                    htmp.node = *head;
-                    if (*heap_cnt >= K) { //if KNN heap is full
-                        r_heap_node poppedheapnode;
-                        poppedheapnode = rmaxheap_pop(mheap, heap_cnt);
-                    }
-                    rmaxheap_push(mheap, htmp, heap_cnt);   //push new node
-                    max_mindist = mheap[1].distance;
-                }
-                else {
-                    new_node = r_create_node(*(head->branch[i].child), head->branch[i].child);
-                    rstack_push(&r_st, new_node);                   
+        if (head->level > 0) { //if internal
+            for (int i = 0; i < MAXCARD; i++) {  //check children
+                if (head->branch[i].child) {
+                    double min_x = mid(head->branch[i].mbr.bound[0], head->branch[i].mbr.bound[3], qp.x);
+                    double min_y = mid(head->branch[i].mbr.bound[1], head->branch[i].mbr.bound[4], qp.y);
+                    tdist = sqrt(pow(min_x - qp.x, 2) + pow(min_y - qp.y, 2));
+                    if (*heap_cnt < K || tdist <= max_mindist) {
+                        new_node = r_create_node(head->branch[i].child);
+                        rstack_push(&r_st, new_node);
+                    }                 
                 }
             }
         }
-        
+        else {
+            for (int i = 0; i < MAXCARD; i++) {  //if leaf
+                if (head->branch[i].child) {
+                    tdist = sqrt(pow(head->branch[i].mbr.bound[0] - qp.x, 2) + pow(head->branch[i].mbr.bound[1] - qp.y, 2));
+                    if (tdist <= max_mindist) {
+                        htmp.distance = tdist;
+                        htmp.node = *(head);
+                        if (*heap_cnt >= K) {
+                            r_heap_node pop;
+                            pop = rmaxheap_pop(mheap, heap_cnt);
+                        }
+                        rmaxheap_push(mheap, htmp, heap_cnt);   //push new node
+                        max_mindist = tdist;
+                    }
+                }
+            }      
+        }
     }
 
     return mheap;
 
 }
 
-inline double rdist(RTREENODE* a, point qp)
+double rdist(RTREENODE* a, point qp)
 {
     double t1, t2, sqr;
   
@@ -265,10 +215,9 @@ struct r_candidate_node* rstack_pop(struct r_candidate_node** rdt) {
 
     return res;
 }
-struct r_candidate_node* r_create_node(RTREENODE r_node, RTREENODE* ptr) {
+struct r_candidate_node* r_create_node(RTREENODE* ptr) {
     struct r_candidate_node* new_node = (struct r_candidate_node*)malloc(sizeof(struct r_candidate_node));
 
-    new_node->current_node = r_node;
     new_node->pre = new_node->next = NULL;
     new_node->ptr = ptr;
 

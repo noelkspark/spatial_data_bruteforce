@@ -23,7 +23,7 @@
 // kdtree의 node 자료구조 정의.
 
 // 거리함수 정의.
-inline double dist(struct kd_node_t* a, struct kd_node_t* b, int dim)
+double dist(struct kd_node_t* a, struct kd_node_t* b, int dim)
 {
     double t, d = 0;
     while (dim--)
@@ -36,7 +36,7 @@ inline double dist(struct kd_node_t* a, struct kd_node_t* b, int dim)
 }
 
 // swap 함수 정의.
-inline void swap(struct kd_node_t* x, struct kd_node_t* y)
+void swap(struct kd_node_t* x, struct kd_node_t* y)
 {
     double tmp[MAX_DIM];
     memcpy(tmp, x->x, sizeof(tmp));
@@ -129,7 +129,8 @@ struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
     struct candidate_node* point_to_be_popped = *kdt;
     struct candidate_node* res = (struct candidate_node*)malloc(sizeof(struct candidate_node));
 
-    *res = **kdt;
+    (*res).ptr = (**kdt).ptr;
+    (*res).mode = (**kdt).mode;
 
     if ((*kdt)->next != NULL) {
         (*kdt) = (*kdt)->next;
@@ -144,72 +145,50 @@ struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
     return res;
 }
 
-int check_map_overlap(point center, double radius, Rect map0, Rect map1) {
-    int flag = -1;
-    int cnt = 0;
-
-    if (rect_to_point_distance(center, map0) <= radius) {
-        flag = 0;
-        cnt++;
-        
-    }
-    if (rect_to_point_distance(center, map1) <= radius) {
-        flag = 1;
-        cnt++;
-    }
-
-    if (cnt == 2)
-        flag = 2;
-
-    return flag;
-}
 
 //range query의 질의 조건인 질의 포인트와 질의 반경
 void rangeQuery_kd(point** res, struct kd_node_t* root, struct kd_node_t* node, double radius, int mode){
     struct candidate_node* kd_st = NULL;
   
     point center;
+
     struct candidate_node* new_node;
     struct candidate_node* popped;
-
     point* tp;
-
-    res = NULL;
     
     new_node = kd_create_node(root, mode);   //coordinate date of tmp is used only
     kdstack_push(&kd_st, new_node); //root pushed
     
     while (popped = kdstack_pop(&kd_st)) {
-       
         root = popped->ptr; //node where we should start from
         mode = popped->mode;//current mode
-
+        
         if (dist(root, node, 2) <= radius) {   //if candidate is in the query range
             tp = create_point(root->x[0], root->x[1]);
             push_point(res, tp);
         }
         if (root->left) {
-            if (node->x[mode] <= root->x[mode]) {
-                new_node = kd_create_node(root->left, mode);  
+            if (node->x[mode] <= root->x[mode]) {      
+                new_node = kd_create_node(root->left, (-1) * mode + 1);
                 kdstack_push(&kd_st, new_node); 
             }
             else if (node->x[mode] - (root->x[mode]) <= radius) {
-                new_node = kd_create_node(root->left, mode);   
+                new_node = kd_create_node(root->left, (-1) * mode + 1);
                 kdstack_push(&kd_st, new_node); 
             }
         }
         if (root->right) {
             if (node->x[mode] >= root->x[mode]) {
-                new_node = kd_create_node(root->right, mode);
+                new_node = kd_create_node(root->right, (-1) * mode + 1);
                 kdstack_push(&kd_st, new_node);
             }
             else if ((root->x[mode] - node->x[mode]) <= radius) {
-                new_node = kd_create_node(root->right, mode);
+                new_node = kd_create_node(root->right, (-1) * mode + 1);
                 kdstack_push(&kd_st, new_node);
             }
         }
+        free(popped);
     }
-   
 }
 
 //kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
@@ -217,6 +196,7 @@ kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K,
     struct candidate_node* kd_st = NULL;
     struct candidate_node* new_node;
     struct candidate_node* popped;
+    double tdist;
     double max_mindist = DBL_MAX;
 
     kd_heap_node* mheap = (kd_heap_node*)malloc(sizeof(kd_heap_node) * (K + 1)); 
@@ -233,14 +213,14 @@ kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K,
         mode = popped->mode;//current mode
         if (!root)
            continue;
-        
-        if (dist(root, node, 2) <= max_mindist) {   //if NN candidate
-            htmp.distance = dist(root, node, 2);
+        tdist = dist(root, node, 2);
+        if (tdist <= max_mindist) {   //if NN candidate
+            htmp.distance = tdist;
             ttmp.x[0] = root->x[0];
             ttmp.x[1] = root->x[1];
             htmp.node = ttmp;
             //fprintf(stdout, "pushing (%lf %lf) in main\n", ttmp.x[0], ttmp.x[1]);
-            if (*heap_cnt >= K) { //if KNN heap is full
+            if (*heap_cnt > K) { //if KNN heap is full
                 kd_heap_node poppedheapnode;
                 poppedheapnode = maxheap_pop(mheap, heap_cnt);
                //fprintf(stdout, "popped (%lf %lf) in main\n", poppedheapnode.node.x[0], poppedheapnode.node.x[1]);
@@ -250,11 +230,11 @@ kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K,
             max_mindist = mheap[1].distance;
         }
         if (root->left) {          
-            new_node = kd_create_node(root->left, mode);
+            new_node = kd_create_node(root->left, (-1) * mode + 1);
             kdstack_push(&kd_st, new_node);           
         }
         if (root->right) {           
-            new_node = kd_create_node(root->right, mode);
+            new_node = kd_create_node(root->right, (-1) * mode + 1);
             kdstack_push(&kd_st, new_node);
         }
     }

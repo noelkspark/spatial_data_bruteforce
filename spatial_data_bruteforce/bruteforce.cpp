@@ -12,18 +12,17 @@
 using namespace std;
 
 //extern point* head;
-
 void rangeQuery(point** res, point* head, point qp, double r) {
 
 	point* new_p;
-
+	int c = 0;
 	for (point* ptr = head; ptr != NULL; ptr = ptr->next) {
 		if (sqrt(pow(ptr->x - qp.x, 2) + pow(ptr->y - qp.y, 2)) <= r) {
 			new_p = create_point(ptr->x, ptr->y);
 			push_point(res, new_p);
+			c++;
 		}
 	}
-
 }
 
 point* kNNQuery(point** head, point qp, int k) {
@@ -32,13 +31,10 @@ point* kNNQuery(point** head, point qp, int k) {
 	double tar_x, tar_y;
 
 	point* new_p;
-	point* tmp;
 	double min_dist = DBL_MAX;
 
 	for (int i = 0; i < k; i++) {
-		tmp = *head;
 		for (point* ptr = *head; ptr != NULL; ptr = ptr->next) {
-			min_dist = DBL_MAX;
 			if (min_dist > sqrt(pow(ptr->x - qp.x, 2) + pow(ptr->y - qp.y, 2))) {
 				min_dist = sqrt(pow(ptr->x - qp.x, 2) + pow(ptr->y - qp.y, 2));
 				tar = ptr;
@@ -52,7 +48,6 @@ point* kNNQuery(point** head, point qp, int k) {
 			new_p = create_point(tar_x, tar_y);
 			push_point(&res, new_p);
 		}
-		
 	}
 
 	return res;
