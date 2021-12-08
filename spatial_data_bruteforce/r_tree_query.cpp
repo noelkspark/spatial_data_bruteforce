@@ -127,13 +127,11 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
     struct r_candidate_node* popped;
     int overlap_flag;
     double max_mindist = DBL_MAX;
+    double tdist;
 
     r_heap_node* mheap = (r_heap_node*)malloc(sizeof(r_heap_node) * (K + 1));
     r_heap_node htmp;
-    RTREENODE ttmp;
-    double tdist;
 
-    
      new_node = r_create_node(*head, head);
      rstack_push(&r_st, new_node); //root pushed
     
@@ -144,10 +142,16 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
         int cnt = head->count;
         for (int i = 0; i < cnt; i++) {  //check children
             if (!head)  //nothing to check
-                continue;
+                break;
 
-            if (mbr_to_point_distance(head->branch[i].mbr, qp) <= max_mindist) {   //MBR is in range, need to search deeper
+            double min_x = mid(head->branch[i].mbr.bound[0], head->branch[i].mbr.bound[3], qp.x);
+            double min_y = mid(head->branch[i].mbr.bound[1], head->branch[i].mbr.bound[4], qp.y);
+            tdist = sqrt(pow(min_x - qp.x, 2) + pow(min_y - qp.y, 2));
+
+            if (max_mindist > tdist) {
                 if (head->level == 0) { //if leaf node
+                    htmp.distance = tdist;
+                    htmp.node = *head;
                     if (*heap_cnt >= K) { //if KNN heap is full
                         r_heap_node poppedheapnode;
                         poppedheapnode = rmaxheap_pop(mheap, heap_cnt);
@@ -156,16 +160,12 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
                     max_mindist = mheap[1].distance;
                 }
                 else {
-                    htmp.distance = mbr_to_point_distance(head->branch[i].mbr, qp);   //get distance
-                    htmp.node = *head;
-
-                    for (int j = 0; j < (head->branch[i].child->count); j++) {   //push rest of the children in the same level for further use(DFS)
-                        new_node = r_create_node(*(head->branch[i].child), head->branch[i].child);
-                        rstack_push_inorder(&r_st, new_node);
-                    }
-                }                                  
-            }                 
-        }   
+                    new_node = r_create_node(*(head->branch[i].child), head->branch[i].child);
+                    rstack_push(&r_st, new_node);                   
+                }
+            }
+        }
+        
     }
 
     return mheap;
@@ -244,7 +244,7 @@ struct r_candidate_node* rstack_pop(struct r_candidate_node** rdt) {
         return NULL;
     }
     if ((*rdt) == NULL) {
-        fprintf(stdout, "nothing to pop, EMPTY\n");
+        //fprintf(stdout, "nothing to pop, EMPTY\n");
         return NULL;
     }
 
@@ -292,11 +292,11 @@ void rmaxheap_push(struct r_heap_node* heap, struct r_heap_node node, int* cnt) 
         child = parent;
         parent = child / 2;
     }
-    printf("pushed heap : (%lf)\n", node.distance);
+    //printf("pushed heap : (%lf)\n", node.distance);
 }
  struct r_heap_node rmaxheap_pop(struct r_heap_node* heap, int* cnt) {
      struct r_heap_node ret = heap[1];
-     printf("heap popping (%lf)\n", ret.distance);
+     //printf("heap popping (%lf)\n", ret.distance);
      r_swap(&heap[1], &heap[*cnt]);
      (*cnt)--;
 

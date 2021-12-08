@@ -160,9 +160,12 @@ int main() {
 		r_heap_node* res;
 		qp.x = 250.0;	qp.y = 250.0;
 		int cnt = 0;
-		res = RTree_KNNQuery(root, qp, 1, &cnt);
+		CHECK_TIME_START(_start, _freq);
+		res = RTree_KNNQuery(root, qp, 10, &cnt);
+		CHECK_TIME_END(_start, _end, _freq, compute_time);
 		
 		printf("%d\n", cnt);
+		printf("%lf seconds\n", compute_time);
 #endif
 	}
 	else {
