@@ -29,6 +29,7 @@ inline double rdist(RTREENODE* a, point b);
 double mbr_to_point_distance(RTREEMBR mbr, point);
 
 void rstack_push(struct r_candidate_node** head, struct r_candidate_node* n_p);
+void rstack_push_inorder(struct r_candidate_node** head, struct r_candidate_node* n_p);
 struct r_candidate_node* rstack_pop(struct r_candidate_node** head);
 struct r_candidate_node* r_create_node(RTREENODE r_node,RTREENODE* ptr);
 

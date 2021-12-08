@@ -22,11 +22,11 @@ struct kd_node_t* make_kdtree(struct kd_node_t* t, int len, int i, int dim);
 
 void kdstack_push(struct candidate_node** head, struct candidate_node* n_p);
 struct candidate_node* kdstack_pop(struct candidate_node** head);
-struct candidate_node* kd_create_node(struct kd_node_t kd_node, Rect r, struct kd_node_t* ptr, int mode);
+struct candidate_node* kd_create_node(struct kd_node_t* ptr, int mode);
 
 int check_map_overlap(point center, double radius, Rect map1, Rect map2);
 
-point* rangeQuery_kd(struct kd_node_t* root, struct kd_node_t* p, double radius, int mode);
+void rangeQuery_kd(point** res, struct kd_node_t* root, struct kd_node_t* p, double radius, int mode);
 
 kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* p, int K, int mode, int* heap_cnt);
 

@@ -43,7 +43,7 @@ double mbr_to_point_distance(RTREEMBR rec, point p) {
             return p.y - rec.bound[4];
         }
         else {
-            printf("Point is inside the Rectangle\n");
+            //printf("Point is inside the Rectangle\n");
             return 0.0;
         }
     }
@@ -55,7 +55,7 @@ double mbr_to_point_distance(RTREEMBR rec, point p) {
             return p.x - rec.bound[3];
         }
         else {
-            printf("Point is inside the Rectangle\n");
+            //printf("Point is inside the Rectangle\n");
             return 0.0;
         }
     }
@@ -141,8 +141,8 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
     while (popped = rstack_pop(&r_st)) {
         head = popped->ptr; //node where we should start from
         tdist = popped->distance;
-        
-        for (int i = 0; i < (head->count); i++) {  //check children
+        int cnt = head->count;
+        for (int i = 0; i < cnt; i++) {  //check children
             if (!head)  //nothing to check
                 continue;
 
@@ -161,7 +161,7 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
 
                     for (int j = 0; j < (head->branch[i].child->count); j++) {   //push rest of the children in the same level for further use(DFS)
                         new_node = r_create_node(*(head->branch[i].child), head->branch[i].child);
-                        rstack_push(&r_st, new_node);
+                        rstack_push_inorder(&r_st, new_node);
                     }
                 }                                  
             }                 
@@ -185,7 +185,7 @@ inline double rdist(RTREENODE* a, point qp)
 }
 
 void rstack_push(struct r_candidate_node** rst, struct r_candidate_node* n_p) {
-    printf("pushing %p\n", n_p);
+    //printf("pushing %p\n", n_p);
     r_candidate_node* tmp = *rst;
 
     if (*rst == NULL) {
@@ -197,6 +197,47 @@ void rstack_push(struct r_candidate_node** rst, struct r_candidate_node* n_p) {
     (*rst)->pre = n_p;
     *rst = n_p;
 }
+void rstack_push_inorder(struct r_candidate_node** head, struct r_candidate_node* n_p) {
+    r_candidate_node* tmp = *head;
+
+    if (*head == NULL) {
+        *head = n_p;
+        return;
+    }
+
+    if ((*head)->next == NULL && (*head)->distance > n_p->distance) {   //if only one node
+        //push infront of head
+        n_p->next = *head;
+        (*head)->pre = n_p;
+        *head = n_p;
+        return;
+    }
+
+    while ((*head)->next) { //in while if more than one node
+        if ((*head)->distance > n_p->distance) {
+            //push infront of head
+            n_p->next = *head;
+            (*head)->pre = n_p;
+            *head = tmp;
+            return;
+        }
+        (*head) = (*head)->next;
+    }
+    //at last node
+    if ((*head)->distance > n_p->distance) {
+        //push infront of head
+        n_p->next = *head;
+        (*head)->pre = n_p;
+    }
+    else {
+        //push end
+        (*head)->next = n_p;
+        n_p->pre = *head;
+    }
+
+    *head = tmp;
+}
+
 struct r_candidate_node* rstack_pop(struct r_candidate_node** rdt) {
     if (!rdt) {
         printf("somthing wrong\n\n\n\n");
@@ -224,13 +265,12 @@ struct r_candidate_node* rstack_pop(struct r_candidate_node** rdt) {
 
     return res;
 }
-struct r_candidate_node* r_create_node(RTREENODE r_node, RTREENODE* ptr, double distance) {
+struct r_candidate_node* r_create_node(RTREENODE r_node, RTREENODE* ptr) {
     struct r_candidate_node* new_node = (struct r_candidate_node*)malloc(sizeof(struct r_candidate_node));
 
     new_node->current_node = r_node;
     new_node->pre = new_node->next = NULL;
     new_node->ptr = ptr;
-    new_node->distance = distance;
 
     return new_node;
 }

@@ -14,7 +14,7 @@ double rect_to_point_distance(point p, Rect rec) {
 			return p.y - rec.max_y;
 		}
 		else {
-			printf("Point is inside the Rectangle\n");
+			//printf("Point is inside the Rectangle\n");
 			return 0.0;
 		}
 	}
@@ -26,7 +26,7 @@ double rect_to_point_distance(point p, Rect rec) {
 			return p.x - rec.max_x;
 		}
 		else {
-			printf("Point is inside the Rectangle\n");
+			//printf("Point is inside the Rectangle\n");
 			return 0.0;
 		}
 	}
@@ -43,7 +43,7 @@ double rect_to_point_distance(point p, Rect rec) {
 		return sqrt(pow(p.x - rec.max_x, 2) + pow(p.y - rec.min_y, 2));
 	}
 	else {
-		printf("Something is Wrong\n");
+		//printf("Something is Wrong\n");
 	}
 }
 point* create_point(double x, double y) {
@@ -57,32 +57,22 @@ point* create_point(double x, double y) {
 }
 void push_point(point** head, point* n_p) {
 
-	point* tmp = *head;
-
 	if (*head == NULL) {
 		*head = n_p;
 		//printf("first element (%lf, %lf) pushed\n", n_p->x, n_p->y);
 		return;
 	}
-
-	while ((*head)->next != NULL) {
-		//printf("moving, current element is (%lf ,%lf)\n", (*head)->x, (*head)->y);
-		(*head) = (*head)->next;
-		//printf("moved to (%lf, %lf)\n", (*head)->x, (*head)->y);
-	}
-
-	(*head)->next = n_p;
-	n_p->pre = *head;
+	n_p->next = *head;
+	(*head)->pre = n_p;
+	*head = n_p;
 	//printf("element %lf %lf pushed\n", n_p->x, n_p->y);
-
-	*head = tmp;
 }
 
 int pop_point(point** head, point* tar) {
 	point* point_to_be_popped = tar;
 	point* tmp = *head;
 
-	printf("popping target point (%lf, %lf)\n", tar->x, tar->y);
+	//printf("popping target point (%lf, %lf)\n", tar->x, tar->y);
 
 	if ((*head) == tar) {
 		if ((*head)->next) {
@@ -94,7 +84,7 @@ int pop_point(point** head, point* tar) {
 		///
 		tmp = *head;
 		while ((*head)) {
-			printf("linked list from 1: (%lf ,%lf)\n", (*head)->x, (*head)->y);
+			//printf("linked list from 1: (%lf ,%lf)\n", (*head)->x, (*head)->y);
 			(*head) = (*head)->next;
 		}
 		*head = tmp;
@@ -111,7 +101,7 @@ int pop_point(point** head, point* tar) {
 
 			///
 			while ((*head)) {
-				printf("linked list from 2: (%lf ,%lf)\n", (*head)->x, (*head)->y);
+				//printf("linked list from 2: (%lf ,%lf)\n", (*head)->x, (*head)->y);
 				(*head) = (*head)->next;
 			}
 			*head = tmp;
@@ -128,7 +118,7 @@ int pop_point(point** head, point* tar) {
 
 		///
 		while ((*head)) {
-			printf("linked list from 3: (%lf ,%lf)\n", (*head)->x, (*head)->y);
+			//printf("linked list from 3: (%lf ,%lf)\n", (*head)->x, (*head)->y);
 			(*head) = (*head)->next;
 		}
 		*head = tmp;
@@ -136,7 +126,7 @@ int pop_point(point** head, point* tar) {
 
 		return 1;
 	}
-	fprintf(stdout, " \nnothing to delete\n");
+	//fprintf(stdout, " \nnothing to delete\n");
 
 	return 0;
 }

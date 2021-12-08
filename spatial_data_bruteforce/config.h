@@ -19,17 +19,16 @@
 ////////// 1. BRUTE_FORCE //////////////////
 ////////// 2. KD_TREE //////////////////////
 ////////// 3. R_TREE ///////////////////////
-#define MODE BRUTE_FORCE
-
+#define MODE R_TREE
 //////////*(2) CHOOSE QUERY*////////////////
 ////////// 1. DISTANCE /////////////////////
 ////////// 2. RANGE ////////////////////////
 ////////// 3. KNN //////////////////////////
-#define QUERY RANGE
+#define QUERY KNN
 
 //////////*(3) CHOOSE INPUT DATASET FILE*///
 ////////// 1. CLUSTERED_INPUT_FILE /////////
 ////////// 2. GAUSSIAN_INPUT_FILE  /////////
 ////////// 3. UNIFORMED_INPUT_FILE /////////
 ////////// 4. TEST_INPUT_FILE ////////////// --> TEST YOUR OWN INPUT DATASET FILE
-#define INPUT_FILE_NAME TEST_INPUT_FILE
+#define INPUT_FILE_NAME GAUSSIAN_INPUT_FILE
