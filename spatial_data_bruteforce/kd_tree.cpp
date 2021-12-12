@@ -140,7 +140,7 @@ struct candidate_node* kdstack_pop(struct candidate_node** kdt) {
         (*kdt) = NULL;
     }
    
-   // free(point_to_be_popped);
+    free(point_to_be_popped);
 
     return res;
 }
@@ -220,7 +220,7 @@ kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K,
             ttmp.x[1] = root->x[1];
             htmp.node = ttmp;
             //fprintf(stdout, "pushing (%lf %lf) in main\n", ttmp.x[0], ttmp.x[1]);
-            if (*heap_cnt > K) { //if KNN heap is full
+            if (*heap_cnt >= K) { //if KNN heap is full
                 kd_heap_node poppedheapnode;
                 poppedheapnode = maxheap_pop(mheap, heap_cnt);
                //fprintf(stdout, "popped (%lf %lf) in main\n", poppedheapnode.node.x[0], poppedheapnode.node.x[1]);
@@ -237,7 +237,9 @@ kd_heap_node* kNNquery_kd(struct kd_node_t* root, struct kd_node_t* node, int K,
             new_node = kd_create_node(root->right, (-1) * mode + 1);
             kdstack_push(&kd_st, new_node);
         }
+        free(popped);
     }
+ 
 
     return mheap;
 }

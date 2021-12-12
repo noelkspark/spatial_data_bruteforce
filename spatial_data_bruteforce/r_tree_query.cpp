@@ -103,16 +103,22 @@ r_heap_node* RTree_KNNQuery(RTREENODE* head, point qp, int K, int* heap_cnt) {
             for (int i = 0; i < MAXCARD; i++) {  //if leaf
                 if (head->branch[i].child) {
                     tdist = sqrt(pow(head->branch[i].mbr.bound[0] - qp.x, 2) + pow(head->branch[i].mbr.bound[1] - qp.y, 2));
-                    if (tdist <= max_mindist) {
-                        htmp.distance = tdist;
-                        htmp.node = *(head);
-                        if (*heap_cnt >= K) {
+                    
+                    htmp.distance = tdist;
+                    htmp.node = *(head);
+                    if (*heap_cnt >= K) {
+                        if (tdist <= max_mindist) {
                             r_heap_node pop;
                             pop = rmaxheap_pop(mheap, heap_cnt);
-                        }
-                        rmaxheap_push(mheap, htmp, heap_cnt);   //push new node
-                        max_mindist = tdist;
+                            rmaxheap_push(mheap, htmp, heap_cnt);   //push new node
+                            max_mindist = mheap[1].distance;
+                        }                      
                     }
+                    else{
+                        rmaxheap_push(mheap, htmp, heap_cnt);   //push new node
+                        max_mindist = mheap[1].distance;                      
+                    }
+                    
                 }
             }      
         }

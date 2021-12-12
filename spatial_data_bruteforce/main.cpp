@@ -84,7 +84,7 @@ int main() {
 
 #if QUERY == RANGE
 		struct point* kd_rangeQres = NULL;
-		input->x[0] = 100.0;	input->x[1] = 100.0;
+		input->x[0] = 250.0;	input->x[1] = 250.0;
 		int cnt = 0;
 		CHECK_TIME_START(_start, _freq);
 		rangeQuery_kd(&kd_rangeQres, kd_t, input, rad * offset, 0);
@@ -94,20 +94,20 @@ int main() {
 			cnt++;
 			kd_rangeQres = kd_rangeQres->next;
 		}
-		printf("%d data\n", cnt);
+		//printf("%d data\n", cnt);
 		
 #endif
 #if QUERY == KNN
 		kd_heap_node* kd_KNNres = NULL;
 		kd_heap_node tmp;
 		int heap_cnt = 0;
-		int K = 1;
+		int K = 10;
 		input->x[0] = 250.0;	input->x[1] = 250.0;
 		CHECK_TIME_START(_start, _freq);
 		kd_KNNres = kNNquery_kd(kd_t, input, K, 0, &heap_cnt);
 		CHECK_TIME_END(_start, _end, _freq, compute_time);
 #endif
-		printf("%5.3f seconds past\n\n", compute_time);
+		//printf("%d ouput, %5.3f seconds past\n\n", heap_cnt, compute_time);
 	}
 	else if (MODE == R_TREE) {
 		RTREENODE* root = RTreeCreate();
@@ -135,21 +135,21 @@ int main() {
 			cnt++;
 			rtree_RQ_res = rtree_RQ_res->next;
 		}
-		printf("%d\n", cnt);
-		printf("%f\n", compute_time);
+		//printf("%d\n", cnt);
+		//printf("%f\n", compute_time);
 		
 #endif
 #if QUERY == KNN
 		point qp;
 		r_heap_node* res;
-		qp.x = 100.0;	qp.y = 100.0;
+		qp.x = 250.0;	qp.y = 250.0;
 		int cnt = 0;
 		CHECK_TIME_START(_start, _freq);
-		res = RTree_KNNQuery(root, qp, 10, &cnt);
+		res = RTree_KNNQuery(root, qp, 1, &cnt);
 		CHECK_TIME_END(_start, _end, _freq, compute_time);
 		
-		printf("%d\n", cnt);
-		printf("%lf seconds\n", compute_time);
+		//printf("%d\n", cnt);
+		//printf("%lf seconds\n", compute_time);
 
 #endif
 	}
